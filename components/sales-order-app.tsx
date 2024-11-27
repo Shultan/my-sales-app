@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, FileText, Check, Menu, Trash2, Edit2 } from 'lucide-react';
@@ -39,15 +39,29 @@ const INITIAL_ORDERS: Order[] = [
   },
 ];
 
-export const SalesOrderApp = () => {
-  const [orders, setOrders] = useState<Order[]>(() => {
-    try {
-      const saved = localStorage.getItem('orders');
-      return saved ? JSON.parse(saved) : INITIAL_ORDERS;
-    } catch {
-      return INITIAL_ORDERS;
+export function SalesOrderApp() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const savedOrders = localStorage.getItem('orders');
+    if (savedOrders) {
+      try {
+        setOrders(JSON.parse(savedOrders));
+      } catch {
+        setOrders(INITIAL_ORDERS);
+      }
+    } else {
+      setOrders(INITIAL_ORDERS);
     }
-  });
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem('orders', JSON.stringify(orders));
+    }
+  }, [orders, mounted]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showMenu, setShowMenu] = useState(false);
@@ -57,14 +71,6 @@ export const SalesOrderApp = () => {
   const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('orders', JSON.stringify(orders));
-    } catch (error) {
-      console.error('Failed to save orders to localStorage:', error);
-    }
-  }, [orders]);
 
   const initialNewOrder: NewOrder = {
     customer: '',
@@ -88,12 +94,13 @@ export const SalesOrderApp = () => {
       };
 
       if (editingOrder) {
-        setOrders(orders.map(order => 
+        const updatedOrders = orders.map(order => 
           order.id === editingOrder.id ? orderToSave : order
-        ));
+        );
+        setOrders(updatedOrders);
         setAlert({ type: 'success', message: 'Order updated successfully!' });
       } else {
-        setOrders([...orders, orderToSave]);
+        setOrders(prevOrders => [...prevOrders, orderToSave]);
         setAlert({ type: 'success', message: 'New order added successfully!' });
       }
       
@@ -151,6 +158,14 @@ export const SalesOrderApp = () => {
     }
     return modifier * (a.amount - b.amount);
   });
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 overflow-x-hidden">
@@ -369,11 +384,3 @@ export const SalesOrderApp = () => {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default SalesOrderApp;
