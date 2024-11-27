@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Search, FileText, Check, Menu, Trash2, Edit2 } from 'lucide-react';
 
 interface Order {
@@ -18,11 +18,52 @@ type NewOrder = {
   notes: string;
 };
 
+const formatDate = (date: Date | string) => {
+  const d = new Date(date);
+  return d.toISOString().split('T')[0];
+};
+
+const INITIAL_ORDERS: Order[] = [
+  { 
+    id: 1, 
+    customer: 'Acme Corp', 
+    amount: 1500, 
+    status: 'pending', 
+    date: formatDate(new Date()), 
+    notes: 'Quarterly subscription' 
+  },
+  { 
+    id: 2, 
+    customer: 'TechStart', 
+    amount: 2300, 
+    status: 'completed', 
+    date: formatDate(new Date()), 
+    notes: 'Hardware purchase' 
+  },
+];
+
 export const SalesOrderApp = () => {
-  const [orders, setOrders] = useState<Order[]>([
-    { id: 1, customer: 'Acme Corp', amount: 1500, status: 'pending', date: '2024-11-27', notes: 'Quarterly subscription' },
-    { id: 2, customer: 'TechStart', amount: 2300, status: 'completed', date: '2024-11-27', notes: 'Hardware purchase' },
-  ]);
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
+
+  useEffect(() => {
+    const savedOrders = localStorage.getItem('orders');
+    if (savedOrders) {
+      setOrders(JSON.parse(savedOrders));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isClient) {
+      localStorage.setItem('orders', JSON.stringify(orders));
+    }
+  }, [orders, isClient]);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -36,7 +77,7 @@ export const SalesOrderApp = () => {
     customer: '',
     amount: '',
     status: 'pending',
-    date: new Date().toISOString().split('T')[0],
+    date: formatDate(new Date()),
     notes: ''
   };
 
@@ -45,11 +86,11 @@ export const SalesOrderApp = () => {
   const handleAddOrder = () => {
     if (newOrder.customer && newOrder.amount) {
       const orderToSave: Order = {
-        id: editingOrder ? editingOrder.id : orders.length + 1,
+        id: editingOrder ? editingOrder.id : Math.max(...orders.map(o => o.id), 0) + 1,
         customer: newOrder.customer,
         amount: Number(newOrder.amount),
         status: newOrder.status,
-        date: newOrder.date,
+        date: formatDate(newOrder.date),
         notes: newOrder.notes
       };
 
@@ -248,7 +289,7 @@ export const SalesOrderApp = () => {
                   ${order.amount.toLocaleString('en-US')}
                 </span>
                 <span className="text-sm text-gray-500">
-                  {new Date(order.date).toLocaleDateString('en-US')}
+                  {isClient ? order.date : ''}
                 </span>
               </div>
             </div>
