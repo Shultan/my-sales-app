@@ -62,6 +62,7 @@ export const SalesOrderApp = () => {
       setNewOrder(initialNewOrder);
       setEditingOrder(null);
       setShowModal(false);
+      setShowMenu(false);
 
       setTimeout(() => setAlert(null), 3000);
     }
@@ -77,6 +78,7 @@ export const SalesOrderApp = () => {
       notes: order.notes || ''
     });
     setShowModal(true);
+    setShowMenu(false);
   };
 
   const handleDeleteOrder = (id: number) => {
@@ -110,13 +112,13 @@ export const SalesOrderApp = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 overflow-x-hidden">
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <h1 className="text-xl font-bold">Sales Orders</h1>
             <button
-              className="md:hidden"
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100"
               onClick={() => setShowMenu(!showMenu)}
             >
               <Menu className="h-6 w-6" />
@@ -134,55 +136,58 @@ export const SalesOrderApp = () => {
           </div>
         )}
 
-        <div className={`flex flex-col md:flex-row gap-4 mb-6 ${showMenu ? 'block' : 'hidden md:flex'}`}>
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search orders..."
-              className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+        <div className={`${showMenu ? 'block' : 'hidden'} md:block`}>
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search orders..."
+                className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
 
-          <div className="flex gap-2">
-            <select
-              className="px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as 'all' | 'pending' | 'completed')}
-            >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
-            </select>
+            <div className="flex flex-col md:flex-row gap-2">
+              <select
+                className="px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as 'all' | 'pending' | 'completed')}
+              >
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+              </select>
 
-            <select
-              className="px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={`${sortBy}-${sortDirection}`}
-              onChange={(e) => {
-                const [newSortBy, newDirection] = e.target.value.split('-');
-                setSortBy(newSortBy as 'date' | 'amount');
-                setSortDirection(newDirection as 'asc' | 'desc');
-              }}
-            >
-              <option value="date-desc">Newest First</option>
-              <option value="date-asc">Oldest First</option>
-              <option value="amount-desc">Highest Amount</option>
-              <option value="amount-asc">Lowest Amount</option>
-            </select>
+              <select
+                className="px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={`${sortBy}-${sortDirection}`}
+                onChange={(e) => {
+                  const [newSortBy, newDirection] = e.target.value.split('-');
+                  setSortBy(newSortBy as 'date' | 'amount');
+                  setSortDirection(newDirection as 'asc' | 'desc');
+                }}
+              >
+                <option value="date-desc">Newest First</option>
+                <option value="date-asc">Oldest First</option>
+                <option value="amount-desc">Highest Amount</option>
+                <option value="amount-asc">Lowest Amount</option>
+              </select>
 
-            <button
-              onClick={() => {
-                setEditingOrder(null);
-                setNewOrder(initialNewOrder);
-                setShowModal(true);
-              }}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              New Order
-            </button>
+              <button
+                onClick={() => {
+                  setEditingOrder(null);
+                  setNewOrder(initialNewOrder);
+                  setShowModal(true);
+                  setShowMenu(false);
+                }}
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                New Order
+              </button>
+            </div>
           </div>
         </div>
 
@@ -251,8 +256,8 @@ export const SalesOrderApp = () => {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-auto">
             <h2 className="text-xl font-bold mb-4">
               {editingOrder ? 'Edit Order' : 'Create New Order'}
             </h2>
