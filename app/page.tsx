@@ -1,5 +1,11 @@
-import { SalesOrderApp } from '@/components/sales-order-app.client';
+'use client';
+
+import { SalesOrderApp } from '@/components/sales-order-app';
 
 export default function Page() {
-  return <SalesOrderApp />;
+  return (
+    <main>
+      <SalesOrderApp />
+    </main>
+  );
 }
