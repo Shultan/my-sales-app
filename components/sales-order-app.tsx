@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, FileText, Check, Menu, Trash2, Edit2 } from 'lucide-react';
 
@@ -29,7 +31,7 @@ const INITIAL_ORDERS: Order[] = [
     customer: 'Acme Corp', 
     amount: 1500, 
     status: 'pending', 
-    date: formatDate(new Date()), 
+    date: new Date().toISOString().split('T')[0], 
     notes: 'Quarterly subscription' 
   },
   { 
@@ -37,17 +39,28 @@ const INITIAL_ORDERS: Order[] = [
     customer: 'TechStart', 
     amount: 2300, 
     status: 'completed', 
-    date: formatDate(new Date()), 
+    date: new Date().toISOString().split('T')[0], 
     notes: 'Hardware purchase' 
   },
 ];
 
 export const SalesOrderApp = () => {
-  const [isClient, setIsClient] = useState(false);
-  
+  const [orders, setOrders] = useState<Order[]>(() => {
+    try {
+      const saved = localStorage.getItem('orders');
+      return saved ? JSON.parse(saved) : INITIAL_ORDERS;
+    } catch {
+      return INITIAL_ORDERS;
+    }
+  });
+
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    try {
+      localStorage.setItem('orders', JSON.stringify(orders));
+    } catch (error) {
+      console.error('Failed to save orders to localStorage:', error);
+    }
+  }, [orders]);
 
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
 
@@ -380,7 +393,9 @@ export const SalesOrderApp = () => {
         </div>
       )}
     </div>
-  );
+ };
+
+export default SalesOrderApp;
 };
 
 export default SalesOrderApp;
