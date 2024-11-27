@@ -44,26 +44,33 @@ export const SalesOrderApp = () => {
 
   const handleAddOrder = () => {
     if (newOrder.customer && newOrder.amount) {
+      const orderToSave: Order = {
+        id: editingOrder ? editingOrder.id : orders.length + 1,
+        customer: newOrder.customer,
+        amount: Number(newOrder.amount),
+        status: newOrder.status,
+        date: newOrder.date,
+        notes: newOrder.notes
+      };
+
       if (editingOrder) {
         setOrders(orders.map(order => 
-          order.id === editingOrder.id 
-            ? { ...order, ...newOrder, amount: Number(newOrder.amount) }
-            : order
+          order.id === editingOrder.id ? orderToSave : order
         ));
         setAlert({ type: 'success', message: 'Order updated successfully!' });
       } else {
-        setOrders([...orders, {
-          ...newOrder,
-          id: orders.length + 1,
-          amount: Number(newOrder.amount)
-        }]);
+        setOrders([...orders, orderToSave]);
         setAlert({ type: 'success', message: 'New order added successfully!' });
       }
+      
       setNewOrder(initialNewOrder);
       setEditingOrder(null);
       setShowModal(false);
       setShowMenu(false);
 
+      setTimeout(() => setAlert(null), 3000);
+    } else {
+      setAlert({ type: 'error', message: 'Please fill in all required fields!' });
       setTimeout(() => setAlert(null), 3000);
     }
   };
