@@ -20,11 +20,6 @@ type NewOrder = {
   notes: string;
 };
 
-const formatDate = (date: Date | string) => {
-  const d = new Date(date);
-  return d.toISOString().split('T')[0];
-};
-
 const INITIAL_ORDERS: Order[] = [
   { 
     id: 1, 
@@ -54,29 +49,6 @@ export const SalesOrderApp = () => {
     }
   });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('orders', JSON.stringify(orders));
-    } catch (error) {
-      console.error('Failed to save orders to localStorage:', error);
-    }
-  }, [orders]);
-
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
-
-  useEffect(() => {
-    const savedOrders = localStorage.getItem('orders');
-    if (savedOrders) {
-      setOrders(JSON.parse(savedOrders));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isClient) {
-      localStorage.setItem('orders', JSON.stringify(orders));
-    }
-  }, [orders, isClient]);
-
   const [searchTerm, setSearchTerm] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -86,11 +58,19 @@ export const SalesOrderApp = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem('orders', JSON.stringify(orders));
+    } catch (error) {
+      console.error('Failed to save orders to localStorage:', error);
+    }
+  }, [orders]);
+
   const initialNewOrder: NewOrder = {
     customer: '',
     amount: '',
     status: 'pending',
-    date: formatDate(new Date()),
+    date: new Date().toISOString().split('T')[0],
     notes: ''
   };
 
@@ -103,7 +83,7 @@ export const SalesOrderApp = () => {
         customer: newOrder.customer,
         amount: Number(newOrder.amount),
         status: newOrder.status,
-        date: formatDate(newOrder.date),
+        date: newOrder.date,
         notes: newOrder.notes
       };
 
@@ -302,7 +282,7 @@ export const SalesOrderApp = () => {
                   ${order.amount.toLocaleString('en-US')}
                 </span>
                 <span className="text-sm text-gray-500">
-                  {isClient ? order.date : ''}
+                  {new Date(order.date).toLocaleDateString()}
                 </span>
               </div>
             </div>
@@ -393,9 +373,7 @@ export const SalesOrderApp = () => {
         </div>
       )}
     </div>
- };
-
-export default SalesOrderApp;
+  );
 };
 
 export default SalesOrderApp;
