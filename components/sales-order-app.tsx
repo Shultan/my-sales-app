@@ -10,6 +10,14 @@ interface Order {
   notes?: string;
 }
 
+type NewOrder = {
+  customer: string;
+  amount: string;
+  status: 'pending' | 'completed';
+  date: string;
+  notes: string;
+};
+
 export const SalesOrderApp = () => {
   const [orders, setOrders] = useState<Order[]>([
     { id: 1, customer: 'Acme Corp', amount: 1500, status: 'pending', date: '2024-11-27', notes: 'Quarterly subscription' },
@@ -24,22 +32,22 @@ export const SalesOrderApp = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  const initialNewOrder = {
+  const initialNewOrder: NewOrder = {
     customer: '',
     amount: '',
-    status: 'pending' as const,
+    status: 'pending',
     date: new Date().toISOString().split('T')[0],
     notes: ''
   };
 
-  const [newOrder, setNewOrder] = useState(initialNewOrder);
+  const [newOrder, setNewOrder] = useState<NewOrder>(initialNewOrder);
 
   const handleAddOrder = () => {
     if (newOrder.customer && newOrder.amount) {
       if (editingOrder) {
         setOrders(orders.map(order => 
           order.id === editingOrder.id 
-            ? { ...newOrder, id: editingOrder.id, amount: Number(newOrder.amount) }
+            ? { ...order, ...newOrder, amount: Number(newOrder.amount) }
             : order
         ));
         setAlert({ type: 'success', message: 'Order updated successfully!' });
@@ -55,7 +63,6 @@ export const SalesOrderApp = () => {
       setEditingOrder(null);
       setShowModal(false);
 
-      // Auto-hide alert after 3 seconds
       setTimeout(() => setAlert(null), 3000);
     }
   };
@@ -94,7 +101,6 @@ export const SalesOrderApp = () => {
     (statusFilter === 'all' || order.status === statusFilter)
   );
 
-  // Sort orders
   filteredOrders = [...filteredOrders].sort((a, b) => {
     const modifier = sortDirection === 'asc' ? 1 : -1;
     if (sortBy === 'date') {
@@ -105,7 +111,6 @@ export const SalesOrderApp = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
@@ -120,7 +125,6 @@ export const SalesOrderApp = () => {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {alert && (
           <div className={`mb-4 p-4 rounded-lg ${
@@ -130,7 +134,6 @@ export const SalesOrderApp = () => {
           </div>
         )}
 
-        {/* Action Bar */}
         <div className={`flex flex-col md:flex-row gap-4 mb-6 ${showMenu ? 'block' : 'hidden md:flex'}`}>
           <div className="relative flex-1">
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -183,7 +186,6 @@ export const SalesOrderApp = () => {
           </div>
         </div>
 
-        {/* Orders List */}
         <div className="space-y-4">
           {filteredOrders.map(order => (
             <div key={order.id} className="bg-white rounded-lg shadow p-6">
@@ -248,7 +250,6 @@ export const SalesOrderApp = () => {
         </div>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
